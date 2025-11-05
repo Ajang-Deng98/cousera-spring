@@ -1,0 +1,6 @@
+services:
+  app:
+    build: .
+    image: coursera-spring-hello-world-app
+    ports:
+      - "80:80"
