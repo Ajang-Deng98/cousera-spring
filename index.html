@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Locator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Event Locator</h1>
+        <p>Find local events near you</p>
+    </header>
+
+    <main>
+        <section class="search-section">
+            <input type="text" id="searchInput" placeholder="Search events by name or location...">
+            <select id="categoryFilter">
+                <option value="">All Categories</option>
+                <option value="Technology">Technology</option>
+                <option value="Music">Music</option>
+                <option value="Food">Food</option>
+                <option value="Sports">Sports</option>
+            </select>
+            <button onclick="searchEvents()">Search</button>
+        </section>
+
+        <section class="events-section">
+            <div id="eventsContainer"></div>
+        </section>
+
+        <section class="add-event-section">
+            <h2>Add New Event</h2>
+            <form id="eventForm">
+                <input type="text" id="eventName" placeholder="Event Name" required>
+                <input type="text" id="eventLocation" placeholder="Location" required>
+                <input type="datetime-local" id="eventDateTime" required>
+                <select id="eventCategory" required>
+                    <option value="">Select Category</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Music">Music</option>
+                    <option value="Food">Food</option>
+                    <option value="Sports">Sports</option>
+                </select>
+                <textarea id="eventDescription" placeholder="Description"></textarea>
+                <button type="submit">Add Event</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

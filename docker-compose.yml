@@ -1,6 +1,13 @@
 services:
-  app:
+  event-locator:
     build: .
-    image: coursera-spring-hello-world-app
+    container_name: event-locator-app
     ports:
-      - "80:80"
+      - "3000:80"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
