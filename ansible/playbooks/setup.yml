@@ -1,0 +1,29 @@
+---
+- name: Initial Server Setup
+  hosts: webservers
+  become: yes
+  
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+        
+    - name: Install required packages
+      package:
+        name:
+          - nginx
+          - ufw
+        state: present
+        
+    - name: Configure firewall
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+      with_items:
+        - '22'
+        - '80'
+        - '443'
+        
+    - name: Enable firewall
+      ufw:
+        state: enabled

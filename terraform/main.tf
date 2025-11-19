@@ -12,43 +12,85 @@ provider "aws" {
   region = var.aws_region
 }
 
-# S3 bucket for hosting static website
-resource "aws_s3_bucket" "event_locator_bucket" {
-  bucket = var.bucket_name
-}
+# VPC
+resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
 
-resource "aws_s3_bucket_website_configuration" "event_locator_website" {
-  bucket = aws_s3_bucket.event_locator_bucket.id
-
-  index_document {
-    suffix = "index.html"
+  tags = {
+    Name = "${var.project_name}-vpc"
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "event_locator_pab" {
-  bucket = aws_s3_bucket.event_locator_bucket.id
+# Internet Gateway
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  tags = {
+    Name = "${var.project_name}-igw"
+  }
 }
 
-resource "aws_s3_bucket_policy" "event_locator_policy" {
-  bucket = aws_s3_bucket.event_locator_bucket.id
+# Public Subnet for Bastion
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = data.aws_availability_zones.available.names[0]
+  map_public_ip_on_launch = true
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.event_locator_bucket.arn}/*"
-      }
-    ]
-  })
+  tags = {
+    Name = "${var.project_name}-public-subnet"
+  }
+}
 
-  depends_on = [aws_s3_bucket_public_access_block.event_locator_pab]
+# Private Subnet for App
+resource "aws_subnet" "private" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = data.aws_availability_zones.available.names[0]
+
+  tags = {
+    Name = "${var.project_name}-private-subnet"
+  }
+}
+
+# Public Subnet 2 for ALB
+resource "aws_subnet" "public_2" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.3.0/24"
+  availability_zone       = data.aws_availability_zones.available.names[1]
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.project_name}-public-subnet-2"
+  }
+}
+
+resource "aws_route_table_association" "public_2" {
+  subnet_id      = aws_subnet.public_2.id
+  route_table_id = aws_route_table.public.id
+}
+
+# Route Tables
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = {
+    Name = "${var.project_name}-public-rt"
+  }
+}
+
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+data "aws_availability_zones" "available" {
+  state = "available"
 }

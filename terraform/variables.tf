@@ -4,7 +4,21 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "bucket_name" {
-  description = "S3 bucket name for hosting the website"
+variable "project_name" {
+  description = "Project name for resource naming"
+  type        = string
+  default     = "eventlocator"
+}
+
+variable "ssh_public_key_path" {
+  description = "Path to SSH public key"
+  type        = string
+  default     = "~/.ssh/id_rsa.pub"
+}
+
+variable "ssh_public_key" {
+  description = "SSH public key content for EC2 instances"
   type        = string
 }
+
+

@@ -1,0 +1,58 @@
+---
+- name: Deploy Event Locator Application
+  hosts: webservers
+  become: yes
+  vars:
+    app_name: event-locator
+    app_dir: /var/www/{{ app_name }}
+    
+  tasks:
+    - name: Install nginx
+      package:
+        name: nginx
+        state: present
+        
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+        
+    - name: Copy application files
+      copy:
+        src: "{{ item }}"
+        dest: "{{ app_dir }}/"
+        owner: www-data
+        group: www-data
+        mode: '0644'
+      with_items:
+        - ../../index.html
+        - ../../styles.css
+        - ../../script.js
+        
+    - name: Configure nginx
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/{{ app_name }}
+      notify: restart nginx
+      
+    - name: Enable site
+      file:
+        src: /etc/nginx/sites-available/{{ app_name }}
+        dest: /etc/nginx/sites-enabled/{{ app_name }}
+        state: link
+      notify: restart nginx
+      
+    - name: Start and enable nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+        
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
